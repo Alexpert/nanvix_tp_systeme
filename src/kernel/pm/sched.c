@@ -100,9 +100,7 @@ PUBLIC void yield(void)
 		 * if equal higest waiting time
 		 * is choosen
 		 */
-		if (p->priority + p->nice <  next->priority + next->nice ||
-		   (p->priority + p->nice == next->priority + next->nice &&
-		   	p->counter > next->counter))
+		if (p->counter * (next->priority + next->nice) > (next->counter) * (p->priority + p->nice))
 		{
 			next->counter++;
 			next = p;
