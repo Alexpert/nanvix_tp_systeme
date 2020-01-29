@@ -116,7 +116,7 @@ PUBLIC void yield(void)
 	int sum = 0;
 	for (p = FIRST_PROC; p <= LAST_PROC; p++) {
 		if (p->state == PROC_READY)
-			sum += p->priority+p->nice+140;
+			sum += p->priority+p->nice - PRIO_IO + NZERO;
 	}
 	/*
 	if(sum != 0){
@@ -143,8 +143,8 @@ PUBLIC void yield(void)
 			if (p->state != PROC_READY)
 				continue;
 
-			if (rand > p->priority+p->nice+140) {
-				rand -= p->priority+p->nice+140;
+			if (rand > p->priority+p->nice - PRIO_IO + NZERO) {
+				rand -= p->priority+p->nice - PRIO_IO + NZERO;
 				p->counter++;
 			}
 			else{
