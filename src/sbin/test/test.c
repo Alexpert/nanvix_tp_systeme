@@ -385,7 +385,7 @@ static int sched_test4(void)
 
 	for (unsigned int i = 0; i < nbSons && pid != 0; ++i) {
 		pid = fork();
-		prio = i;
+		prio = NZERO - i;
 	}
 
 	if (pid == 0) {
