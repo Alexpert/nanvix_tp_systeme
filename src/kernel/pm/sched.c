@@ -26,7 +26,7 @@
 
 /**
  * @brief Schedules a process to execution.
- * 
+ *
  * @param proc Process to be scheduled.
  */
 PUBLIC void sched(struct process *proc)
@@ -47,13 +47,13 @@ PUBLIC void stop(void)
 
 /**
  * @brief Resumes a process.
- * 
+ *
  * @param proc Process to be resumed.
- * 
+ *
  * @note The process must stopped to be resumed.
  */
 PUBLIC void resume(struct process *proc)
-{	
+{
 	/* Resume only if process has stopped. */
 	if (proc->state == PROC_STOPPED)
 		sched(proc);
@@ -80,7 +80,7 @@ PUBLIC void yield(void)
 		/* Skip invalid processes. */
 		if (!IS_VALID(p))
 			continue;
-		
+
 		/* Alarm has expired. */
 		if ((p->alarm) && (p->alarm < ticks))
 			p->alarm = 0, sndsig(p, SIGALRM);
@@ -93,19 +93,19 @@ PUBLIC void yield(void)
 		/* Skip non-ready process. */
 		if (p->state != PROC_READY)
 			continue;
-		
+
 		/*
 		 * Process with lowest
 		 * priority + niceness found
 		 * if equal higest waiting time
 		 * is choosen
 		 */
-		if (p->counter * (next->priority + next->nice) > (next->counter) * (p->priority + p->nice))
+		if ((10 * p->priority + 5 * p->nice - p->counter) <= (10 * next->priority + 5 * next->nice - next->counter))
 		{
 			next->counter++;
 			next = p;
 		}
-			
+
 		/*
 		 * Increment waiting
 		 * time of process.
@@ -113,7 +113,7 @@ PUBLIC void yield(void)
 		else
 			p->counter++;
 	}
-	
+
 	/* Switch to next process. */
 	next->priority = PRIO_USER;
 	next->state = PROC_RUNNING;
