@@ -26,7 +26,7 @@
 
 /**
  * @brief Schedules a process to execution.
- * 
+ *
  * @param proc Process to be scheduled.
  */
 PUBLIC void sched(struct process *proc)
@@ -47,13 +47,13 @@ PUBLIC void stop(void)
 
 /**
  * @brief Resumes a process.
- * 
+ *
  * @param proc Process to be resumed.
- * 
+ *
  * @note The process must stopped to be resumed.
  */
 PUBLIC void resume(struct process *proc)
-{	
+{
 	/* Resume only if process has stopped. */
 	if (proc->state == PROC_STOPPED)
 		sched(proc);
@@ -80,7 +80,7 @@ PUBLIC void yield(void)
 		/* Skip invalid processes. */
 		if (!IS_VALID(p))
 			continue;
-		
+
 		/* Alarm has expired. */
 		if ((p->alarm) && (p->alarm < ticks))
 			p->alarm = 0, sndsig(p, SIGALRM);
@@ -93,19 +93,19 @@ PUBLIC void yield(void)
 	// 	/* Skip non-ready process. */
 	// 	if (p->state != PROC_READY)
 	// 		continue;
-		
+
 	// 	/*
 	// 	 * Process with lowest
 	// 	 * priority + niceness found
 	// 	 * if equal higest waiting time
 	// 	 * is choosen
 	// 	 */
-	// 	if (p->counter > next->counter)   
+	// 	if (p->counter > next->counter)
 	// 	{
 	// 		next->counter++;
 	// 		next = p;
 	// 	}
-			
+
 	// 	/*
 	// 	 * Increment waiting
 	// 	 * time of process.
@@ -114,16 +114,48 @@ PUBLIC void yield(void)
 	// 		p->counter++;
 	// }
 	int sum = 0;
-	for (p = FIRST_PROC; p <= LAST_PROC; p++)
-		sum +=  (-(p->priority) - (p->nice)) + 120;
-
-	int rand = ticks % sum;
-
-	next = FIRST_PROC;
-	while (rand > - next->priority - next->nice + 120) {
-		rand -= - next->priority - next->nice + 120;
-		next->counter++;
+	for (p = FIRST_PROC; p <= LAST_PROC; p++) {
+		if (p->state == PROC_READY)
+			sum += p->priority+p->nice+140;
 	}
+	/*
+	if(sum != 0){
+		int rand = ticks % sum;
+
+		next = FIRST_PROC;
+		while (next <= LAST_PROC) {
+			if (rand >  -next->priority - next->nice + 120 && next->state == PROC_READY) {
+				rand -=  -next->priority - next->nice + 120;
+				next->counter++;
+			}
+			next++;
+			while(next->state != PROC_READY && next < LAST_PROC){
+				next++;
+			}
+		}
+	}*/
+	if(sum!=0){
+		int rand = ticks % sum;
+
+		for (p = FIRST_PROC; p <= LAST_PROC; p++)
+		{
+			/* Skip non-ready process. */
+			if (p->state != PROC_READY)
+				continue;
+
+			if (rand > p->priority+p->nice+140) {
+				rand -= p->priority+p->nice+140;
+				p->counter++;
+			}
+			else{
+				next->counter++;
+				next = p;
+				break;
+			}
+		}
+	}
+
+
 
 
 	/* Switch to next process. */
