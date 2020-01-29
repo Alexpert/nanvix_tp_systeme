@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "clock.h": "c",
+        "config.h": "c"
+    }
+}

@@ -88,32 +88,44 @@ PUBLIC void yield(void)
 
 	/* Choose a process to run next. */
 	next = IDLE;
-	for (p = FIRST_PROC; p <= LAST_PROC; p++)
-	{
-		/* Skip non-ready process. */
-		if (p->state != PROC_READY)
-			continue;
+	// for (p = FIRST_PROC; p <= LAST_PROC; p++)
+	// {
+	// 	/* Skip non-ready process. */
+	// 	if (p->state != PROC_READY)
+	// 		continue;
 		
-		/*
-		 * Process with lowest
-		 * priority + niceness found
-		 * if equal higest waiting time
-		 * is choosen
-		 */
-		if (p->counter > next->counter)   
-		{
-			next->counter++;
-			next = p;
-		}
+	// 	/*
+	// 	 * Process with lowest
+	// 	 * priority + niceness found
+	// 	 * if equal higest waiting time
+	// 	 * is choosen
+	// 	 */
+	// 	if (p->counter > next->counter)   
+	// 	{
+	// 		next->counter++;
+	// 		next = p;
+	// 	}
 			
-		/*
-		 * Increment waiting
-		 * time of process.
-		 */
-		else
-			p->counter++;
+	// 	/*
+	// 	 * Increment waiting
+	// 	 * time of process.
+	// 	 */
+	// 	else
+	// 		p->counter++;
+	// }
+	int sum = 0;
+	for (p = FIRST_PROC; p <= LAST_PROC; p++)
+		sum +=  (-(p->priority) - (p->nice)) + 120;
+
+	int rand = ticks % sum;
+
+	next = FIRST_PROC;
+	while (rand > - next->priority - next->nice + 120) {
+		rand -= - next->priority - next->nice + 120;
+		next->counter++;
 	}
-	
+
+
 	/* Switch to next process. */
 	next->priority = PRIO_USER;
 	next->state = PROC_RUNNING;
