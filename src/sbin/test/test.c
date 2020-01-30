@@ -383,19 +383,20 @@ static int sched_test4(void)
 	int prio = 0;
 	int pid = getpid();
 
+	/* Spawn 20 process with a niceness from NZERO to NZERO-20 */
 	for (unsigned int i = 0; i < nbSons && pid != 0; ++i) {
 		pid = fork();
 		prio = NZERO - i;
 	}
 
-	if (pid == 0) {
+	if (pid == 0) {		// son's code
 		nice(NZERO + prio);
 		work_cpu();
-		printf("%d\n", NZERO + prio);
+		printf("%d\n", NZERO + prio);	// print the priority when the work is done (aim to be printed in ascending order du to priority scheduling)
 		_exit(EXIT_SUCCESS);
-	} else {
+	} else {	//parent's code
 		unsigned int i = 0;
-		while (i < nbSons) {
+		while (i < nbSons) {	// wait for the sons to terminate
 			wait(NULL);
 			i++;
 		}

@@ -95,17 +95,14 @@ PUBLIC void yield(void)
 			continue;
 
 		/*
-		 * Process with lowest
-		 * priority + niceness found
-		 * if equal higest waiting time
-		 * is choosen
+		 * Process with lowest priority chosen. Priority is twice as important as niceness, and 10 time as counter
+		 * Even a process with very high priority will pass due to high counter
 		 */
 		if ((10 * p->priority + 5 * p->nice - p->counter) <= (10 * next->priority + 5 * next->nice - next->counter))
 		{
 			next->counter++;
 			next = p;
 		}
-
 		/*
 		 * Increment waiting
 		 * time of process.
