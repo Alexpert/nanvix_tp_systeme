@@ -195,179 +195,179 @@ static void work_cpu(void)
 	}
 }
 
-/**
- * @brief Performs some dummy IO-intensive computation.
- */
-static void work_io(void)
-{
-	int fd;            /* File descriptor. */
-	char buffer[2048]; /* Buffer.          */
+// /**
+//  * @brief Performs some dummy IO-intensive computation.
+//  */
+// static void work_io(void)
+// {
+// 	int fd;            /* File descriptor. */
+// 	char buffer[2048]; /* Buffer.          */
 	
-	/* Open hdd. */
-	fd = open("/dev/hdd", O_RDONLY);
-	if (fd < 0)
-		_exit(EXIT_FAILURE);
+// 	/* Open hdd. */
+// 	fd = open("/dev/hdd", O_RDONLY);
+// 	if (fd < 0)
+// 		_exit(EXIT_FAILURE);
 	
-	/* Read data. */
-	for (size_t i = 0; i < MEMORY_SIZE; i += sizeof(buffer))
-	{
-		if (read(fd, buffer, sizeof(buffer)) < 0)
-			_exit(EXIT_FAILURE);
-	}
+// 	/* Read data. */
+// 	for (size_t i = 0; i < MEMORY_SIZE; i += sizeof(buffer))
+// 	{
+// 		if (read(fd, buffer, sizeof(buffer)) < 0)
+// 			_exit(EXIT_FAILURE);
+// 	}
 	
-	/* House keeping. */
-	close(fd);
-}
+// 	/* House keeping. */
+// 	close(fd);
+// }
 
-/**
- * @brief Scheduling test 0.
- * 
- * @details Spawns two processes and tests wait() system call.
- * 
- * @return Zero if passed on test, and non-zero otherwise.
- */
-static int sched_test0(void)
-{
-	pid_t pid;
+// /**
+//  * @brief Scheduling test 0.
+//  * 
+//  * @details Spawns two processes and tests wait() system call.
+//  * 
+//  * @return Zero if passed on test, and non-zero otherwise.
+//  */
+// static int sched_test0(void)
+// {
+// 	pid_t pid;
 	
-	pid = fork();
+// 	pid = fork();
 	
-	/* Failed to fork(). */
-	if (pid < 0)
-		return (-1);
+// 	/* Failed to fork(). */
+// 	if (pid < 0)
+// 		return (-1);
 	
-	/* Child process. */
-	else if (pid == 0)
-	{
-		work_cpu();
-		_exit(EXIT_SUCCESS);
-	}
+// 	/* Child process. */
+// 	else if (pid == 0)
+// 	{
+// 		work_cpu();
+// 		_exit(EXIT_SUCCESS);
+// 	}
 
-	wait(NULL);
+// 	wait(NULL);
 	
-	return (0);
-}
+// 	return (0);
+// }
 
-/**
- * @brief Scheduling test 1.
- * 
- * @details Forces the priority inversion problem, to check how well the system
- *          performs on dynamic priorities.
- * 
- * @returns Zero if passed on test, and non-zero otherwise.
- */
-static int sched_test1(void)
-{
-	pid_t pid;
+// /**
+//  * @brief Scheduling test 1.
+//  * 
+//  * @details Forces the priority inversion problem, to check how well the system
+//  *          performs on dynamic priorities.
+//  * 
+//  * @returns Zero if passed on test, and non-zero otherwise.
+//  */
+// static int sched_test1(void)
+// {
+// 	pid_t pid;
 		
-	pid = fork();
+// 	pid = fork();
 	
-	/* Failed to fork(). */
-	if (pid < 0)
-		return (-1);
+// 	/* Failed to fork(). */
+// 	if (pid < 0)
+// 		return (-1);
 	
-	/* Parent process. */
-	else if (pid > 0)
-	{
-		nice(-2*NZERO);
-		work_cpu();
-	}
+// 	/* Parent process. */
+// 	else if (pid > 0)
+// 	{
+// 		nice(-2*NZERO);
+// 		work_cpu();
+// 	}
 	
-	/* Child process. */
-	else
-	{
-		nice(2*NZERO);
-		work_io();
-		_exit(EXIT_SUCCESS);
-	}
+// 	/* Child process. */
+// 	else
+// 	{
+// 		nice(2*NZERO);
+// 		work_io();
+// 		_exit(EXIT_SUCCESS);
+// 	}
 		
-	wait(NULL);
+// 	wait(NULL);
 	
-	return (0);
-}
+// 	return (0);
+// }
 
-/**
- * @brief Scheduling test 1.
- * 
- * @details Spawns several processes and stresses the scheduler.
- * 
- * @returns Zero if passed on test, and non-zero otherwise.
- */
-static int sched_test2(void)
-{
-	pid_t pid[4];
+// /**
+//  * @brief Scheduling test 1.
+//  * 
+//  * @details Spawns several processes and stresses the scheduler.
+//  * 
+//  * @returns Zero if passed on test, and non-zero otherwise.
+//  */
+// static int sched_test2(void)
+// {
+// 	pid_t pid[4];
 	
-	for (int i = 0; i < 4; i++)
-	{
-		pid[i] = fork();
+// 	for (int i = 0; i < 4; i++)
+// 	{
+// 		pid[i] = fork();
 	
-		/* Failed to fork(). */
-		if (pid[i] < 0)
-			return (-1);
+// 		/* Failed to fork(). */
+// 		if (pid[i] < 0)
+// 			return (-1);
 		
-		/* Child process. */
-		else if (pid[i] == 0)
-		{
-			if (i & 1)
-			{
-				nice(2*NZERO);
-				work_cpu();
-				_exit(EXIT_SUCCESS);
-			}
+// 		/* Child process. */
+// 		else if (pid[i] == 0)
+// 		{
+// 			if (i & 1)
+// 			{
+// 				nice(2*NZERO);
+// 				work_cpu();
+// 				_exit(EXIT_SUCCESS);
+// 			}
 			
-			else
-			{	
-				nice(-2*NZERO);
-				pause();
-				_exit(EXIT_SUCCESS);
-			}
-		}
-	}
+// 			else
+// 			{	
+// 				nice(-2*NZERO);
+// 				pause();
+// 				_exit(EXIT_SUCCESS);
+// 			}
+// 		}
+// 	}
 	
-	for (int i = 0; i < 4; i++)
-	{
-		if (i & 1)
-			wait(NULL);
+// 	for (int i = 0; i < 4; i++)
+// 	{
+// 		if (i & 1)
+// 			wait(NULL);
 			
-		else
-		{	
-			kill(pid[i], SIGCONT);
-			wait(NULL);
-		}
-	}
+// 		else
+// 		{	
+// 			kill(pid[i], SIGCONT);
+// 			wait(NULL);
+// 		}
+// 	}
 	
-	return (0);
-}
+// 	return (0);
+// }
 
-/**
- * @brief Scheduling test 3.
- * 
- * @details Spawns several processes and stresses the scheduler.
- * 
- * @returns Zero if passed on test, and non-zero otherwise.
- */
-static int sched_test3(void)
-{
-	pid_t child;
-	pid_t father;
+// /**
+//  * @brief Scheduling test 3.
+//  * 
+//  * @details Spawns several processes and stresses the scheduler.
+//  * 
+//  * @returns Zero if passed on test, and non-zero otherwise.
+//  */
+// static int sched_test3(void)
+// {
+// 	pid_t child;
+// 	pid_t father;
 
-	father = getpid();
+// 	father = getpid();
 
-	fork();
-	fork();
-	fork();
-	fork();
+// 	fork();
+// 	fork();
+// 	fork();
+// 	fork();
 
-	/* Wait for children. */
-	while ((child = wait(NULL)) >= 0)
-		/* noop. */;
+// 	/* Wait for children. */
+// 	while ((child = wait(NULL)) >= 0)
+// 		/* noop. */;
 	
-	/* Die. */
-	if (getpid() != father)
-		_exit(EXIT_SUCCESS);
+// 	/* Die. */
+// 	if (getpid() != father)
+// 		_exit(EXIT_SUCCESS);
 
-	return (0);
-}
+// 	return (0);
+// }
 
 /**
  * @brief Scheduling test 4.
@@ -378,24 +378,24 @@ static int sched_test3(void)
  */
 static int sched_test4(void)
 {
-	unsigned int nbSons = 20;
+	int max_prio = 10, min_prio = 0;
 
 	int prio = 0;
 	int pid = getpid();
 
-	for (unsigned int i = 0; i < nbSons && pid != 0; ++i) {
+	for (int i = max_prio; i > min_prio && pid != 0; --i) {
 		pid = fork();
 		prio = i;
 	}
 
 	if (pid == 0) {
-		nice(NZERO + prio);
+		nice(prio);
 		work_cpu();
-		printf("%d\n", NZERO + prio);
+		printf("%d\n", prio);
 		_exit(EXIT_SUCCESS);
 	} else {
-		unsigned int i = 0;
-		while (i < nbSons) {
+		int i = 0;
+		while (i < max_prio - min_prio) {
 			wait(NULL);
 			i++;
 		}
@@ -676,12 +676,12 @@ int main(int argc, char **argv)
 		else if (!strcmp(argv[i], "sched"))
 		{
 			printf("Scheduling Tests\n");
-			printf("  waiting for child  [%s]\n",
-				(!sched_test0()) ? "PASSED" : "FAILED");
-			printf("  dynamic priorities [%s]\n",
-				(!sched_test1()) ? "PASSED" : "FAILED");
-			printf("  scheduler stress   [%s]\n",
-				(!sched_test2() && !sched_test3()) ? "PASSED" : "FAILED");
+			// printf("  waiting for child  [%s]\n",
+			// 	(!sched_test0()) ? "PASSED" : "FAILED");
+			// printf("  dynamic priorities [%s]\n",
+			// 	(!sched_test1()) ? "PASSED" : "FAILED");
+			// printf("  scheduler stress   [%s]\n",
+			// 	(!sched_test2() && !sched_test3()) ? "PASSED" : "FAILED");
 			printf("  nice test for child  [%s]\n",
 				(!sched_test4()) ? "PASSED" : "FAILED");
 		}

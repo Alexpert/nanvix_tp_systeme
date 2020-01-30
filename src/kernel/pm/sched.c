@@ -24,11 +24,11 @@
 #include <nanvix/pm.h>
 #include <signal.h>
 
+#define NB_QUEUES 2
+
 struct multiqueue {
-	struct process *super_user_proc[PROC_MAX];
-	struct process *user_proc[PROC_MAX];
-	unsigned nb_su_proc;
-	unsigned nb_u_proc;
+	struct process *proc_lists[PROC_MAX][NB_QUEUES];
+	unsigned nb_proc_lists[NB_QUEUES];
 };
 
 
@@ -75,6 +75,8 @@ PUBLIC void yield(void)
 	struct process *p;    /* Working process.     */
 	struct process *next; /* Next process to run. */
 
+	struct multiqueue multiqueue;
+
 	/* Re-schedule process for execution. */
 	if (curr_proc->state == PROC_RUNNING)
 		sched(curr_proc);
@@ -94,75 +96,37 @@ PUBLIC void yield(void)
 			p->alarm = 0, sndsig(p, SIGALRM);
 	}
 
-	/* Choose a process to run next. */
-	// next = IDLE;
-	// for (p = FIRST_PROC; p <= LAST_PROC; p++)
-	// {
-	// 	/* Skip non-ready process. */
-	// 	if (p->state != PROC_READY)
-	// 		continue;
-		
-	// 	/*
-	// 	 * Process with lowest
-	// 	 * priority + niceness found
-	// 	 * if equal higest waiting time
-	// 	 * is choosen
-	// 	 */
-	// 	if (p->counter > next->counter)   
-	// 	{
-	// 		next->counter++;
-	// 		next = p;
-	// 	}
-			
-	// 	/*
-	// 	 * Increment waiting
-	// 	 * time of process.
-	// 	 */
-	// 	else
-	// 		p->counter++;
-	// }
-
-	struct multiqueue multiqueue;
-	multiqueue.nb_su_proc = 0;
-	multiqueue.nb_u_proc = 0;
+	for (int i = 0; i < NB_QUEUES; i++)
+		multiqueue.nb_proc_lists[i] = 0;
 
 
 	for (p = FIRST_PROC; p <= LAST_PROC; p++) {
 		if(p->state != PROC_READY)
 			continue;
 
-		if (IS_SUPERUSER(p)) {
-			multiqueue.super_user_proc[multiqueue.nb_su_proc] = p;
-			multiqueue.nb_su_proc++;
+		if (p->nice % 2 == 0) {
+			multiqueue.proc_lists[0][multiqueue.nb_proc_lists[0]] = p;
+			multiqueue.nb_proc_lists[0]++;
 		} else {
-			multiqueue.user_proc[multiqueue.nb_u_proc] = p;
-			multiqueue.nb_u_proc++;
+			multiqueue.proc_lists[1][multiqueue.nb_proc_lists[1]] = p;
+			multiqueue.nb_proc_lists[1]++;
 		}
 	}
+	
+	int num_list = 0;
+	while (num_list < NB_QUEUES && multiqueue.nb_proc_lists[num_list] == 0)
+		num_list++;
 
 	next = IDLE;
-
-	struct process **proc_list;
-	unsigned proc_list_size;
-
-	if (multiqueue.nb_su_proc != 0) {
-		proc_list = multiqueue.super_user_proc;
-		proc_list_size = multiqueue.nb_su_proc;
-	} else {
-		proc_list = multiqueue.user_proc;
-		proc_list_size = multiqueue.nb_u_proc;
-	}
-
-	for (unsigned i = 0; i < proc_list_size; i++) {
-		if (proc_list[i]->counter > next->counter) {
+	for (unsigned i = 0; i < multiqueue.nb_proc_lists[num_list]; i++) {
+		if (multiqueue.proc_lists[num_list][i]->counter > next->counter) {
 			next->counter++;
-			next = proc_list[i];
+			next = multiqueue.proc_lists[num_list][i];
 		} else {
-			proc_list[i]->counter++;
+			multiqueue.proc_lists[num_list][i]->counter++;
 		}
 
 	}
-
 	
 	/* Switch to next process. */
 	next->priority = PRIO_USER;
