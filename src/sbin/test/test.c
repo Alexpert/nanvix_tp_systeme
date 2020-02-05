@@ -378,7 +378,7 @@ static void work_cpu(void)
  */
 static int sched_test4(void)
 {
-	int max_prio = 10, min_prio = 0;
+	int max_prio = 9, min_prio = 0;
 
 	int prio = 0;
 	int pid = getpid();

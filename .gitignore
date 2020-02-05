@@ -50,3 +50,5 @@ tools/run/bochsrc.txt
 # Exceptions.
 !doc/paper/img/*.pdf
 !doc/paper/*.pdf
+
+*.lock

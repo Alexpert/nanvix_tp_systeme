@@ -99,18 +99,22 @@ PUBLIC void yield(void)
 	for (int i = 0; i < NB_QUEUES; i++)
 		multiqueue.nb_proc_lists[i] = 0;
 
-
+	int k = 0;
 	for (p = FIRST_PROC; p <= LAST_PROC; p++) {
 		if(p->state != PROC_READY)
 			continue;
 
-		if (p->nice % 2 == 0) {
-			multiqueue.proc_lists[0][multiqueue.nb_proc_lists[0]] = p;
-			multiqueue.nb_proc_lists[0]++;
-		} else {
-			multiqueue.proc_lists[1][multiqueue.nb_proc_lists[1]] = p;
-			multiqueue.nb_proc_lists[1]++;
-		}
+		// if (p->nice % 2 == 0) {
+		// 	multiqueue.proc_lists[0][multiqueue.nb_proc_lists[0]] = p;
+		// 	multiqueue.nb_proc_lists[0]++;
+		// } else {
+		// 	multiqueue.proc_lists[1][multiqueue.nb_proc_lists[1]] = p;
+		// 	multiqueue.nb_proc_lists[1]++;
+		// }
+		k = k % NB_QUEUES;
+		multiqueue.proc_lists[k][multiqueue.nb_proc_lists[k]] = p;
+		multiqueue.nb_proc_lists[k]++;
+		k++;
 	}
 	
 	int num_list = 0;
