@@ -263,6 +263,18 @@
 	 * Get system ticks since initialization
 	 */
 	EXTERN int sys_gticks(void);
+	
+
+
+	EXTERN int sys_semget(void);
+	
+
+	
+	EXTERN int sys_semctl(void);
+	
+
+	
+	EXTERN int sys_semop(void);
 
 #endif /* _ASM_FILE_ */
 
