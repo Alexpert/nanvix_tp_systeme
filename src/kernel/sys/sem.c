@@ -6,13 +6,14 @@ int create_sem(unsigned key) {
         return -1;
 
     int idx = sem_list_length;
+    sem_list_length++;
     sem_list[idx]->sem_key = key;
     sem_list[idx]->sem_id = key;
     sem_list[idx]->sem_val = 1;
     sem_list[idx]->sem_list_procs = NULL;
     sem_list[idx]->sem_nb_waiting = 0;
 
-    return key;
+    return sem_list_length;
 }
 
 int destruct_sem(unsigned idx) {
@@ -28,11 +29,13 @@ int destruct_sem(unsigned idx) {
 
 PUBLIC int sys_semget(unsigned key) 
 {
+    return 1;
+    
     unsigned i = 0;
     while (sem_list[i]->sem_key != key)
         i++;
     
-    if (i == sem_list_length)
+    if (i != sem_list_length)
         return sem_list[i]->sem_id;
     
     else
@@ -57,18 +60,18 @@ PUBLIC int sys_semctl(int semid, int cmd, int val)
     int ret = 0;
     switch (cmd)
     {
-    case GETVAL:
-        ret = sem_list[i]->sem_val;
-        break;
-    case SETVAL:
-        sem_list[i]->sem_val = val;
-        break;
-    case IPC_RMID:
-        ret = destruct_sem(i);
-        break;
-    default:
-        ret = -1;
-        break;
+        case GETVAL:
+            ret = sem_list[i]->sem_val;
+            break;
+        case SETVAL:
+            sem_list[i]->sem_val = val;
+            break;
+        case IPC_RMID:
+            ret = destruct_sem(i);
+            break;
+        default:
+            ret = -1;
+            break;
     }
 
     return ret;

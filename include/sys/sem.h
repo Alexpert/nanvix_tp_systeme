@@ -39,7 +39,7 @@
 		unsigned sem_nb_waiting;
 	};
 
-	unsigned sem_list_length;
+	unsigned sem_list_length = 0;
 	struct sem *sem_list[SEM_MAX];
 
 	/* Forward definitions. */

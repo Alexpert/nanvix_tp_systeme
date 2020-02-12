@@ -432,6 +432,8 @@ int semaphore_test3(void)
 	int mutex;                  /* Mutex.                   */
 	const int BUFFER_SIZE = 32; /* Buffer size.             */
 	const int NR_ITEMS = 512;   /* Number of items to send. */
+
+	printf("%X\n", semget(2));
 	
 	/* Create buffer.*/
 	buffer_fd = open("buffer", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
