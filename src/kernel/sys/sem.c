@@ -15,14 +15,34 @@ struct semaphore {
  static unsigned int nb_sem = 0;
 
 PUBLIC int sys_semget(unsigned key) {
+
+
   for (int i = 0; i < SEM_MAX; i ++) {
     if (sem_list[i].key == key) {
       return sem_list[i].id;
     }
   }
 
+  int new_id = -1;
+  for(unsigned int i = 0; i < SEM_MAX; i++){
+    int found = 0;
+    for(unsigned int j = 0;j < nb_sem;j++){
+      if(sem_list[j].id == i){
+        found = 1;
+      }
+    }
+    if(!found){
+      new_id = i;
+      break;
+    }
+  }
+
+  if(new_id == -1){
+    return -1;
+  }
+
   sem_list[nb_sem].key = key;
-  sem_list[nb_sem].id = nb_sem;
+  sem_list[nb_sem].id = new_id;
 
   nb_sem ++;
   return sem_list[nb_sem-1].id;
