@@ -87,11 +87,17 @@ PUBLIC int sys_semop(int semid, int op) {
       current_sem->value--;
     } else {
       current_sem->value++;
-      //sleep
+      sleep(current_sem->processes, 0);
     }
   } else {
     if (current_sem->value == 0 && current_sem->nb_proc > 0) {
-      //wakeup fifo
+      struct process *next = *current_sem->processes;
+      while (next->next != NULL && next->next->next != NULL)
+        next = (next)->next;
+      struct process *to_wake = next->next;
+      next->next = NULL;
+      wakeup(&to_wake);
+      current_sem->nb_proc--;
     } else {
       current_sem->value++;
     }
