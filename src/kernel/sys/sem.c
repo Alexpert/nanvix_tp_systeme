@@ -1,5 +1,19 @@
 #include <sys/sem.h>
 #include <nanvix/pm.h>
+	
+#define SEM_MAX  128
+
+struct sem
+{
+	unsigned sem_key;
+	int sem_id;
+	unsigned sem_val;
+	struct process **sem_list_procs;
+	unsigned sem_nb_waiting;
+};
+
+static unsigned sem_list_length;
+static struct sem *sem_list[SEM_MAX];
 
 int create_sem(unsigned key) {
     if (sem_list_length == SEM_MAX)
@@ -13,33 +27,33 @@ int create_sem(unsigned key) {
     sem_list[idx]->sem_list_procs = NULL;
     sem_list[idx]->sem_nb_waiting = 0;
 
-    return sem_list_length;
+    return idx;
 }
 
 int destruct_sem(unsigned idx) {
     if (idx >= SEM_MAX)
         return -1;
 
-    while (idx < sem_list_length - 1)
+    while (idx < sem_list_length - 1) {
         sem_list[idx] = sem_list[idx + 1];
+        idx++;
+    }
 
     sem_list_length--;
-    return idx;
+    return 0;
 }
 
 PUBLIC int sys_semget(unsigned key) 
 {
-    return 1;
-    
     unsigned i = 0;
-    while (sem_list[i]->sem_key != key)
+    while (i < sem_list_length && sem_list[i]->sem_key != key)
         i++;
     
     if (i != sem_list_length)
         return sem_list[i]->sem_id;
     
     else
-        return create_sem(key);
+        return sem_list_length;
 }
 
 PUBLIC int sys_semctl(int semid, int cmd, int val)
@@ -48,14 +62,14 @@ PUBLIC int sys_semctl(int semid, int cmd, int val)
         return -1;
     
     if (semid < 0 || semid > SEM_MAX - 1)
-        return -1;
+        return -2;
 
     unsigned i = 0;
-    while (sem_list[i]->sem_id != semid)
+    while (i < sem_list_length && sem_list[i]->sem_id != semid)
         i++;
 
     if (i == sem_list_length)
-        return -1;
+        return -3;
 
     int ret = 0;
     switch (cmd)
@@ -70,7 +84,7 @@ PUBLIC int sys_semctl(int semid, int cmd, int val)
             ret = destruct_sem(i);
             break;
         default:
-            ret = -1;
+            ret = -4;
             break;
     }
 
@@ -82,7 +96,7 @@ PUBLIC int sys_semop(int semid, int op) {
         return -1;
 
     unsigned i = 0;
-    while (sem_list[i]->sem_id != semid)
+    while (i < sem_list_length && sem_list[i]->sem_id != semid)
         i++;
 
     if (i == sem_list_length)
@@ -91,22 +105,28 @@ PUBLIC int sys_semop(int semid, int op) {
     struct sem *current_sem = sem_list[i];
 
     if (op < 0) {
+        disable_interupts();
         if (current_sem->sem_val > 0) {
             current_sem->sem_val--;
         } else {
             current_sem->sem_nb_waiting++;
             sleep(current_sem->sem_list_procs, 0);
         }
+        enable_interupts();
     } else {
+        disable_interupts();
         if (current_sem->sem_val == 0 && current_sem->sem_nb_waiting > 0) {
             struct process *next = *current_sem->sem_list_procs;
-            while (next->next != NULL)
+            while (next->next != NULL && next->next->next != NULL)
                 next = (next)->next;
-            wakeup(&next);
+            struct process *to_wake = next->next;
+            next->next = NULL;
+            wakeup(&to_wake);
             current_sem->sem_nb_waiting--;
         } else {
             current_sem->sem_val++;
         }
+        enable_interupts();
     }
 
     return 0;

@@ -28,19 +28,6 @@
 	#define SETVAL   1 /**< Sets the value of a semaphore.    */
 	#define IPC_RMID 3 /**< Destroys a semaphore.            */
 	/**@}*/
-	#define SEM_MAX  128
-
-	struct sem
-	{
-		unsigned sem_key;
-		int sem_id;
-		unsigned sem_val;
-		struct process **sem_list_procs;
-		unsigned sem_nb_waiting;
-	};
-
-	unsigned sem_list_length = 0;
-	struct sem *sem_list[SEM_MAX];
 
 	/* Forward definitions. */
 	extern int semget(unsigned);

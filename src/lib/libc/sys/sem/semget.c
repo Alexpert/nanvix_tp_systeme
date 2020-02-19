@@ -19,6 +19,7 @@
 
 #include <nanvix/syscall.h>
 #include <errno.h>
+#include <stdio.h>
 
 /**
  * @brief Creates a semaphore.

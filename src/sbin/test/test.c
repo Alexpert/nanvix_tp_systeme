@@ -432,24 +432,29 @@ int semaphore_test3(void)
 	int mutex;                  /* Mutex.                   */
 	const int BUFFER_SIZE = 32; /* Buffer size.             */
 	const int NR_ITEMS = 512;   /* Number of items to send. */
-
-	printf("%X\n", semget(2));
 	
 	/* Create buffer.*/
 	buffer_fd = open("buffer", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 	if (buffer_fd < 0)
 		return (-1);
 	
+	printf("sem create\n");
+	printf("%X\n",semget(2));
 	/* Create semaphores. */
 	SEM_CREATE(mutex, 1);
 	SEM_CREATE(empty, 2);
 	SEM_CREATE(full, 3);
+
+	printf("%X\n",semget(5));
 		
+	printf("sem init\n");
 	/* Initialize semaphores. */
+	printf("%X\n", semctl(2, SETVAL, 2));
 	SEM_INIT(full, 0);
 	SEM_INIT(empty, BUFFER_SIZE);
 	SEM_INIT(mutex, 1);
 	
+	printf("sem fork\n");
 	if ((pid = fork()) < 0)
 		return (-1);
 	
