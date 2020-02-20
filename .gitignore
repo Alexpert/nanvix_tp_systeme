@@ -52,3 +52,5 @@ tools/run/bochsrc.txt
 !doc/paper/*.pdf
 
 hdd\.img\.lock
+
+.vscode/
