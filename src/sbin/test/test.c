@@ -586,13 +586,18 @@ int semaphore_test3(void)
 	{
 		for (int item = 0; item < NR_ITEMS; item++)
 		{
+			printf("getting access as Producer for %d\n", item);
 			SEM_DOWN(empty);
+			printf("empty Producer\n");
 			SEM_DOWN(mutex);
+			printf("got access as Producer\n");
 
 			PUT_ITEM(buffer_fd, item);
 
 			SEM_UP(mutex);
+			printf("mutex Producer\n");
 			SEM_UP(full);
+			printf("leaving access as Producer\n");
 		}
 
 		_exit(EXIT_SUCCESS);
@@ -605,13 +610,18 @@ int semaphore_test3(void)
 
 		do
 		{
+			printf("getting access as Consumer\n");
 			SEM_DOWN(full);
+			printf("full Consumer\n");
 			SEM_DOWN(mutex);
+			printf("got access as Producer\n");
 
 			GET_ITEM(buffer_fd, item);
 
 			SEM_UP(mutex);
+			printf("mutex Consumer\n");
 			SEM_UP(empty);
+			printf("leaving access as Producer got item %d\n", item);
 		} while (item != (NR_ITEMS - 1));
 	}
 

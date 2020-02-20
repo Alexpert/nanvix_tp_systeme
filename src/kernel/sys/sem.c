@@ -48,8 +48,8 @@ PUBLIC int sys_semctl(int semid, int cmd, int val) {
   int i, ret;
   if (cmd != GETVAL && cmd != SETVAL && cmd != IPC_RMID)
     return -1; //error not a command
-  if (cmd == SETVAL && val < 1)
-    return -1; //cannot set the sem to a negative number or 0
+  if (cmd == SETVAL && val < 0)
+    return -1; //cannot set the sem to a negative number
   
   i = 0;
   while (i < nb_sem && sem_list[i].id != semid)
@@ -99,11 +99,9 @@ PUBLIC int sys_semop(int semid, int op) {
     enable_interrupts();
   } else { //up
     disable_interrupts();
-    if (sem_list[i].value == 0) {
+    if (sem_list[i].value == 0)
       wakeup(sem_list[i].processes);
-    } else {
-      sem_list[i].value++;
-    }
+    sem_list[i].value++;
     enable_interrupts();
   }
 
