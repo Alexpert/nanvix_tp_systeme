@@ -439,6 +439,69 @@ static int sched_test3(void)
 		return 0;
  }
 
+ int semaphore_test2(void) {
+	int id_1 = semget(1);
+	assert(id_1 != -1);
+
+	semctl(id_1, SETVAL, 1);
+	assert(semctl(id_1, GETVAL, 0) == 1);
+
+	semop(id_1, -1);
+	assert(semctl(id_1, GETVAL, 0) == 0);
+
+	semop(id_1, 1);
+	assert(semctl(id_1, GETVAL, 0) == 1);
+	
+	semctl(id_1, IPC_RMID, 0);
+
+	return 0;
+ }
+
+ int semaphore_test4(void) {
+	 #define N_PROCS 2
+	int id_1 = semget(1);
+	semctl(id_1, SETVAL, 1);
+
+	int ret_val[N_PROCS];
+	int semval, p;
+	int ret;
+
+	int i = 0;
+	while(i < N_PROCS && (p = fork())) {
+		i++;
+	}
+
+	if (p == 0) {
+		if ((ret = semop(id_1, -1)) != 0) {
+			printf ("semop 1 failed for %d: return value %d\n", i, ret);
+			exit(-1);
+		}
+		sleep(5);
+		semval = semctl(id_1, GETVAL, 0);
+		printf("process %d, semval %d\n", i, semval);
+		if (semval < 0)
+			exit(-1);
+		if ((ret = semop(id_1, 1)) != 0) {
+			printf ("semop -1 failed for %d: return value %d\n", i, ret);
+			exit(-1);
+		}
+		exit(0);
+	} else {
+		for (int j = 0; j < N_PROCS; j++) {
+			wait(&ret);
+			ret_val[i] = ret;
+		}
+	}
+	semctl(id_1, IPC_RMID, 0);
+
+	for (int j = 0; j < N_PROCS; j++) {
+		if (ret_val != 0)
+			return -1;
+	}
+
+	return 0;
+ }
+
 
 int semaphore_test3(void)
 {
@@ -684,8 +747,15 @@ int main(int argc, char **argv)
 		else if (!strcmp(argv[i], "sem"))
 		{
 			printf("Semaphore Test\n");
-			printf("  Result [%s]\n",
+			printf("\tTest semctl\n");
+			printf("\t\tResult [%s]\n",
 				(!semaphore_test1()) ? "PASSED" : "FAILED");
+			printf("\tTest semop changes sem value\n");
+			printf("\t\tResult [%s]\n",
+				(!semaphore_test2()) ? "PASSED" : "FAILED");
+			printf("\tTest sem can't have a negative value\n");
+			printf("\t\tResult [%s]\n",
+				(!semaphore_test4()) ? "PASSED" : "FAILED");
 		}
 
 		/* Wrong usage. */

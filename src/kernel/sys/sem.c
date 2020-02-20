@@ -11,8 +11,8 @@ struct semaphore {
 
 };
 
- static struct semaphore sem_list[SEM_MAX];
- static unsigned int nb_sem = 0;
+static struct semaphore sem_list[SEM_MAX];
+static unsigned int nb_sem = 0;
 
 PUBLIC int sys_semget(unsigned key) {
 
@@ -95,18 +95,17 @@ PUBLIC int sys_semop(int semid, int op) {
     return -1;
 
   unsigned i = 0;
-  while (i < nb_sem && sem_list[i].id != i)
+  while (i < nb_sem && sem_list[i].id != (unsigned) semid)
     i++;
 
   if (i == nb_sem)
-    return -1;
+    return -2;
 
   struct semaphore *current_sem = &sem_list[i];
   if (op < 0) {
     if (current_sem->value > 0) {
       current_sem->value--;
     } else {
-      current_sem->value++;
       sleep(current_sem->processes, 0);
     }
   } else {
@@ -117,10 +116,9 @@ PUBLIC int sys_semop(int semid, int op) {
       struct process *to_wake = next->next;
       next->next = NULL;
       wakeup(&to_wake);
-      current_sem->nb_proc--;
     } else {
       current_sem->value++;
     }
   }
-  return -1;
+  return 0;
 }
