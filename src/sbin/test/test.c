@@ -506,41 +506,6 @@ int semaphore_test_semctl2(void) {
 	
 	return 0;
 }
-//  int semaphore_test1(void) {
-// 	 	int id_1 = semget(101);
-// 		int id_2 = semget(102);
-// 		semctl(id_1, IPC_RMID, 0);
-// 	 	int id_3 = semget(101);
-// 		semctl(id_1, SETVAL, 60);
-// 		int get = semctl(id_1, GETVAL, 60);
-// 		printf("%d, %d, %d\n",id_1, id_2, id_3 );
-// 		if (id_1 == id_3 && get == 60) {
-// 			return 1;
-// 		}
-// 		return 0;
-//  }
-
-//  int semaphore_test2(void) {
-// 	int id_1 = semget(1);
-// 	int id_tmp = semget(1);
-
-// 	assert(id_1 != -1);
-// 	assert(id_1 == id_tmp);
-// 	printf("id: %d", id_1);
-
-// 	semctl(id_1, SETVAL, 1);
-// 	assert(semctl(id_1, GETVAL, 0) == 1);
-
-// 	semop(id_1, -1);
-// 	assert(semctl(id_1, GETVAL, 0) == 0);
-
-// 	semop(id_1, 1);
-// 	assert(semctl(id_1, GETVAL, 0) == 1);
-	
-// 	semctl(id_1, IPC_RMID, 0);
-
-// 	return 0;
-//  }
 
 //  int semaphore_test4(void) {
 // 	 #define N_PROCS 2

@@ -15,18 +15,6 @@ static struct semaphore sem_list[SEM_MAX];
 static int nb_sem = 0;
 
 void init_sem(unsigned key, int idx) {
-  // int id;
-  // int id_taken = TRUE;
-
-  // //find a unique id
-  // for (int i = 0; i < SEM_MAX && id_taken; i++) { //for each possible id
-  //   for (int j = 0; j < nb_sem; j++) { // for each sem
-  //     if (i == sem_list[j].id)
-  //       id_taken = FALSE;
-  //   }
-  //   if (!id_taken)
-  //     id = i;
-  // }
 
   //init structure
   sem_list[idx].id = (int) key;
