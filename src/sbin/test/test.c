@@ -468,14 +468,21 @@ int semaphore_test_semctl1(void) {
 
 int semaphore_test_semctl2(void) {
 	int id_1, id_2;
+	int ret;
 
 	id_1 = semget(1);
 	assert(semctl(id_1, GETVAL, 0) != -1);
-	printf("id_1 %d\n", id_1);
+	assert(semctl(id_1, SETVAL, 42) != -1);
+	ret = semctl(id_1, GETVAL, 0);
+	printf("%d has value %d\n", id_1, ret);
 
-	semctl(id_1, IPC_RMID, 0);
+	ret = semctl(id_1, IPC_RMID, 0);
 	printf("%d removed\n", id_1);
-	if (semctl(id_1, GETVAL, 0) != -1)
+
+	ret = semctl(id_1, GETVAL, 0);
+	printf("%d has value %d\n", id_1, ret);
+
+	if (ret != -1)
 		return -1;
 
 	id_1 = semget(1);
@@ -484,8 +491,18 @@ int semaphore_test_semctl2(void) {
 	printf("id_2 %d\n", id_2);
 
 	semctl(id_1, IPC_RMID, 0);
-	if (semctl(id_1, GETVAL, 0) != -1 || semctl(id_2, GETVAL, 0) == -1)
+	if (semctl(id_1, GETVAL, 0) != -1)
 		return -1;
+	printf("%d removed\n", id_1);
+
+	if (semctl(id_2, GETVAL, 0) == -1)
+		return -1;
+	printf("%d still available\n", id_2);
+
+	semctl(id_2, IPC_RMID, 0);
+	if (semctl(id_2, GETVAL, 0) != -1)
+		return -1;
+	printf("%d removed\n", id_2);
 	
 	return 0;
 }

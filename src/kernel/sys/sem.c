@@ -14,22 +14,22 @@ struct semaphore {
 static struct semaphore sem_list[SEM_MAX];
 static int nb_sem = 0;
 
-void init_sem(int key, int idx) {
-  int id;
-  int id_taken = TRUE;
+void init_sem(unsigned key, int idx) {
+  // int id;
+  // int id_taken = TRUE;
 
-  //find a unique id
-  for (int i = 0; i < SEM_MAX && id_taken; i++) { //for each possible id
-    for (int j = 0; j < nb_sem; j++) { // for each sem
-      if (i == sem_list[j].id)
-        id_taken = FALSE;
-    }
-    if (!id_taken)
-      id = i;
-  }
+  // //find a unique id
+  // for (int i = 0; i < SEM_MAX && id_taken; i++) { //for each possible id
+  //   for (int j = 0; j < nb_sem; j++) { // for each sem
+  //     if (i == sem_list[j].id)
+  //       id_taken = FALSE;
+  //   }
+  //   if (!id_taken)
+  //     id = i;
+  // }
 
   //init structure
-  sem_list[idx].id = id;
+  sem_list[idx].id = (int) key;
   sem_list[idx].key = key;
   sem_list[idx].value = 0;
   sem_list[idx].nb_proc = 0;
@@ -44,16 +44,14 @@ PUBLIC int sys_semget(unsigned key) {
     i++;
 
   if (i == nb_sem) { //sem not found, creating a new one
-    if (nb_sem == SEM_MAX) {
+    if (nb_sem == SEM_MAX)
       return -1; //no room for a new sem
-    }
 
     init_sem(key, i);
     nb_sem++;
-    id = sem_list[i].key;
   }
-
-  id = sem_list[i].key;
+  id = sem_list[i].id;
+  
 
   return id;
 }
@@ -66,7 +64,7 @@ PUBLIC int sys_semctl(int semid, int cmd, int val) {
     return -1; //cannot set the sem to a negative number or 0
   
   i = 0;
-  while (i < nb_sem && sem_list[i].id == semid)
+  while (i < nb_sem && sem_list[i].id != semid)
     i++;
 
   if (i == nb_sem)
@@ -81,8 +79,13 @@ PUBLIC int sys_semctl(int semid, int cmd, int val) {
     sem_list[i].value = val;
     break;
   case IPC_RMID:
-    for (int j = i; j < nb_sem - 1; j++)
-      sem_list[j] = sem_list[j + 1];
+    if (i != nb_sem - 1) {
+      sem_list[i].id = sem_list[nb_sem - 1].id;
+      sem_list[i].key = sem_list[nb_sem - 1].key;
+      sem_list[i].value = sem_list[nb_sem - 1].value;
+      sem_list[i].nb_proc = sem_list[nb_sem - 1].nb_proc;
+      sem_list[i].processes = sem_list[nb_sem - 1].processes;
+    }
     nb_sem--;
     break;
   }
