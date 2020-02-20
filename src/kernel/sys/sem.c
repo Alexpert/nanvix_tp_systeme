@@ -82,5 +82,30 @@ PUBLIC int sys_semctl(int semid, int cmd, int val) {
 }
 
 PUBLIC int sys_semop(int semid, int op) {
-  return semid + op;
+  int i = 0;
+  while (i < nb_sem && sem_list[i].id != semid)
+    i++;
+
+  if (i == nb_sem)
+    return -1; //sem not found
+
+  if (op < 0) { //down
+    disable_interrupts();
+    if (sem_list[i].value > 0) {
+      sem_list[i].value--;
+    } else {
+      sleep(sem_list[i].processes, 0);
+    }
+    enable_interrupts();
+  } else { //up
+    disable_interrupts();
+    if (sem_list[i].value == 0) {
+      wakeup(sem_list[i].processes);
+    } else {
+      sem_list[i].value++;
+    }
+    enable_interrupts();
+  }
+
+  return 0;
 }
