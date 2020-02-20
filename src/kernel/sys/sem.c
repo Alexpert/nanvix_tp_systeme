@@ -1,124 +1,95 @@
 #include <sys/sem.h>
 
-
+#define TRUE 1
+#define FALSE 0
 
 struct semaphore {
+	int id;
  	unsigned key;
-	unsigned int id;
-	unsigned int value;
-	unsigned int nb_proc;
+	unsigned value;
+	unsigned nb_proc;
 	struct process **processes;
-
 };
 
 static struct semaphore sem_list[SEM_MAX];
-static unsigned int nb_sem = 0;
+static int nb_sem = 0;
+
+void init_sem(int key, int idx) {
+  int id;
+  int id_taken = TRUE;
+
+  //find a unique id
+  for (int i = 0; i < SEM_MAX && id_taken; i++) { //for each possible id
+    for (int j = 0; j < nb_sem; j++) { // for each sem
+      if (i == sem_list[j].id)
+        id_taken = FALSE;
+    }
+    if (!id_taken)
+      id = i;
+  }
+
+  //init structure
+  sem_list[idx].id = id;
+  sem_list[idx].key = key;
+  sem_list[idx].value = 0;
+  sem_list[idx].nb_proc = 0;
+  sem_list[idx].processes = NULL;
+}
 
 PUBLIC int sys_semget(unsigned key) {
+  int i = 0;
+  int id;
+  //looking for an existing sem
+  while (i < nb_sem && sem_list[i].key != key)
+    i++;
 
-
-  for (int i = 0; i < SEM_MAX; i ++) {
-    if (sem_list[i].key == key) {
-      return sem_list[i].id;
+  if (i == nb_sem) { //sem not found, creating a new one
+    if (nb_sem == SEM_MAX) {
+      return -1; //no room for a new sem
     }
+
+    init_sem(key, i);
+    nb_sem++;
+    id = sem_list[i].key;
   }
 
-  int new_id = -1;
-  for(unsigned int i = 0; i < SEM_MAX; i++){
-    int found = 0;
-    for(unsigned int j = 0;j < nb_sem;j++){
-      if(sem_list[j].id == i){
-        found = 1;
-      }
-    }
-    if(!found){
-      new_id = i;
-      break;
-    }
-  }
+  id = sem_list[i].key;
 
-  if(new_id == -1){
-    return -1;
-  }
-
-  sem_list[nb_sem].key = key;
-  sem_list[nb_sem].id = new_id;
-
-  nb_sem ++;
-  return sem_list[nb_sem-1].id;
-
+  return id;
 }
 
 PUBLIC int sys_semctl(int semid, int cmd, int val) {
-  if (val < 0)
-    return -1;
-  if (semid < 0 || semid > SEM_MAX - 1)
-    return -1;
+  int i, ret;
   if (cmd != GETVAL && cmd != SETVAL && cmd != IPC_RMID)
-     return -1;
-
-  unsigned i = 0;
-  while (i < nb_sem && sem_list[i].id != i)
+    return -1; //error not a command
+  if (cmd == SETVAL && val < 1)
+    return -1; //cannot set the sem to a negative number or 0
+  
+  i = 0;
+  while (i < nb_sem && sem_list[i].id == semid)
     i++;
 
   if (i == nb_sem)
-    return -1;
+    return -1; //sem not found
 
-  int ret = 0;
+  ret = 0;
   switch (cmd) {
-    case GETVAL:
-      ret = sem_list[i].value;
-      break;
-    case SETVAL:
-      sem_list[i].value = val;
-      break;
-    case IPC_RMID:
-      while (i < nb_sem - 1) {
-        sem_list[i].key = sem_list[i + 1].key;
-        sem_list[i].id = sem_list[i + 1].id;
-        sem_list[i].value = sem_list[i + 1].value;
-        sem_list[i].nb_proc = sem_list[i + 1].nb_proc;
-        sem_list[i].processes = sem_list[i + 1].processes;
-        i++;
-      }
-      nb_sem --;
-      break;
-    default:
-      ret = -1;
+  case GETVAL:
+    ret = sem_list[i].value;
+    break;
+  case SETVAL:
+    sem_list[i].value = val;
+    break;
+  case IPC_RMID:
+    for (int j = i; j < nb_sem - 1; j++)
+      sem_list[j] = sem_list[j + 1];
+    nb_sem--;
+    break;
   }
 
   return ret;
 }
 
 PUBLIC int sys_semop(int semid, int op) {
-  if (semid < 0 || semid > SEM_MAX - 1)
-    return -1;
-
-  unsigned i = 0;
-  while (i < nb_sem && sem_list[i].id != (unsigned) semid)
-    i++;
-
-  if (i == nb_sem)
-    return -2;
-
-  struct semaphore *current_sem = &sem_list[i];
-  if (op < 0) {
-    if (current_sem->value > 0) {
-      current_sem->value--;
-    } else {
-      sleep(current_sem->processes, 0);
-    }
-  } else {
-    if (current_sem->value == 0 && current_sem->nb_proc > 0) {
-      struct process *next = *current_sem->processes;
-      while (next->next != NULL && next->next->next != NULL)
-        next = (next)->next;
-      struct process *to_wake = next->next;
-      next->next = NULL;
-      wakeup(&to_wake);
-    } else {
-      current_sem->value++;
-    }
-  }
-  return 0;
+  return semid + op;
 }
