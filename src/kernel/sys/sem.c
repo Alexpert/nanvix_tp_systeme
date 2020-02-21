@@ -6,7 +6,7 @@
 struct semaphore {
 	int id;
  	unsigned key;
-	unsigned value;
+	int value;
 	unsigned nb_proc;
 	struct process **processes;
 };
@@ -48,8 +48,6 @@ PUBLIC int sys_semctl(int semid, int cmd, int val) {
   int i, ret;
   if (cmd != GETVAL && cmd != SETVAL && cmd != IPC_RMID)
     return -1; //error not a command
-  if (cmd == SETVAL && val < 0)
-    return -1; //cannot set the sem to a negative number
   
   i = 0;
   while (i < nb_sem && sem_list[i].id != semid)
@@ -91,17 +89,20 @@ PUBLIC int sys_semop(int semid, int op) {
 
   if (op < 0) { //down
     disable_interrupts();
-    if (sem_list[i].value > 0) {
-      sem_list[i].value--;
-    } else {
+    sem_list[i].value--;
+    if(sem_list[i].value < 0) {
       sleep(sem_list[i].processes, 0);
     }
     enable_interrupts();
   } else { //up
     disable_interrupts();
-    if (sem_list[i].value == 0)
-      wakeup(sem_list[i].processes);
     sem_list[i].value++;
+    if (sem_list[i].value <= 0) {
+      struct process *process = sem_list[i].processes[0];
+      while(process->next)
+        process = process->next;
+      wakeup(&process);
+    }
     enable_interrupts();
   }
 
