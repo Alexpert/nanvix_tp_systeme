@@ -7,7 +7,6 @@ struct semaphore {
 	int id;
  	unsigned key;
 	int value;
-	unsigned nb_proc;
 	struct process **processes;
 };
 
@@ -20,7 +19,6 @@ void init_sem(unsigned key, int idx) {
   sem_list[idx].id = (int) key;
   sem_list[idx].key = key;
   sem_list[idx].value = 0;
-  sem_list[idx].nb_proc = 0;
   sem_list[idx].processes = NULL;
 }
 
@@ -69,7 +67,6 @@ PUBLIC int sys_semctl(int semid, int cmd, int val) {
       sem_list[i].id = sem_list[nb_sem - 1].id;
       sem_list[i].key = sem_list[nb_sem - 1].key;
       sem_list[i].value = sem_list[nb_sem - 1].value;
-      sem_list[i].nb_proc = sem_list[nb_sem - 1].nb_proc;
       sem_list[i].processes = sem_list[nb_sem - 1].processes;
     }
     nb_sem--;
