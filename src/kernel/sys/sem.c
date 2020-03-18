@@ -87,10 +87,11 @@ PUBLIC int sys_semop(int semid, int op) {
   if (op < 0) { //down
     disable_interrupts();
     sem_list[i].value--;
-    if(sem_list[i].value < 0) {
+    while (sem_list[i].value < 0) {
+      enable_interrupts();
       sleep(sem_list[i].processes, 0);
     }
-    enable_interrupts();
+    //enable_interrupts();
   } else { //up
     disable_interrupts();
     sem_list[i].value++;
