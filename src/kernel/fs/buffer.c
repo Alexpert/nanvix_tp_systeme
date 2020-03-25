@@ -321,6 +321,24 @@ PUBLIC struct buffer *bread(dev_t dev, block_t num)
 	
 	return (buf);
 }
+PUBLIC struct buffer *breada(dev_t dev, block_t num)
+{
+	struct buffer *buf;
+	
+	buf = getblk(dev, num);
+	
+	/* Valid buffer? */
+	if (buf->flags & BUFFER_VALID)
+		return (buf);
+
+	bdev_readblka(buf);
+	
+	/* Update buffer flags. */
+	buf->flags |= BUFFER_VALID;
+	buf->flags &= ~BUFFER_DIRTY;
+	
+	return (buf);
+}
 
 /**
  * @brief Writes a block buffer to the underlying device.
