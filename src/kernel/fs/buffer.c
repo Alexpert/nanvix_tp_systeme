@@ -324,6 +324,7 @@ PUBLIC struct buffer *bread(dev_t dev, block_t num)
 
 PUBLIC struct buffer *breada(dev_t dev, block_t num)
 {
+	kprintf("read from breada");
 	struct buffer *buf;
 	struct buffer *nextbuf;
 
@@ -336,7 +337,7 @@ PUBLIC struct buffer *breada(dev_t dev, block_t num)
 	if (buf->flags & BUFFER_VALID)
 		return (buf);
 
-	bdev_readblk_async(buf);
+	bdev_readblka(buf);
 
 	/* Update buffer flags. */
 	buf->flags |= BUFFER_VALID;

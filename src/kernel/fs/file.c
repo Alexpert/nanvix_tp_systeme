@@ -305,6 +305,7 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 		if (compteur < 5 && blk_tmp == blk_prev + 1) {
 				compteur ++;
 			}
+			
 		if (n > 1 && compteur >= 5) {
 			bbuf = breada(i->dev, blk);
 		}
