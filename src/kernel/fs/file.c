@@ -26,6 +26,8 @@
 #include <errno.h>
 #include "fs.h"
 
+#define NB_SAVE_CACHE 5
+
 /**
  * @brief Searches for a directory entry.
  *
@@ -302,12 +304,16 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 		/* End of file reached. */
 		if (blk == BLOCK_NULL)
 			goto out;
-		if (compteur < 5 && blk_tmp == blk_prev + 1) {
+		if (compteur < NB_SAVE_CACHE && blk_tmp == blk_prev + 1) {
 				compteur ++;
 			}
-			
-		if (n > 1 && compteur >= 5) {
+			else {
+				compteur = 0;
+			}
+
+		if (n > 1 && compteur >= NB_SAVE_CACHE) {
 			bbuf = breada(i->dev, blk);
+			compteur = 0;
 		}
 		else {
 			bbuf = bread(i->dev, blk);

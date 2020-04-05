@@ -34,7 +34,7 @@
 #define EXTENDED (1 << 0)
 #define FULL     (1 << 1)
 #define VERBOSE  (1 << 2)
-#define DATA_SIZE 1000
+#define DATA_SIZE 10000
 
 
 /* Test flags. */
@@ -752,13 +752,13 @@ int main(int argc, char **argv)
 
 		else if (!strcmp(argv[i], "io2"))
 		{
-			printf("I/O 2 Test\n");
+			printf("I/O 2 without lSeek Test\n");
 			printf("  Result:             [%s]\n",
 				(!io_test2()) ? "PASSED" : "FAILED");
 		}
 		else if (!strcmp(argv[i], "io3"))
 		{
-			printf("I/O 3 Test\n");
+			printf("I/O 3 with lSeek Test\n");
 			printf("  Result:             [%s]\n",
 				(!io_test3()) ? "PASSED" : "FAILED");
 		}

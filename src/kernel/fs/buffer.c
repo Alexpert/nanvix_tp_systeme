@@ -26,6 +26,7 @@
 #include <nanvix/pm.h>
 #include "fs.h"
 
+# define NB_SAVE_CACHE 5
 /*
  * Too many buffers. The maximum value depends on
  * the amount of memory that is reserved to buffer
@@ -33,7 +34,7 @@
  * a look on <nanvix/mm.h>
  */
 #if (NR_BUFFERS > 512)
-	#error "too many buffers"
+	#error "too many buffers";
 #endif
 
 /*
@@ -324,14 +325,15 @@ PUBLIC struct buffer *bread(dev_t dev, block_t num)
 
 PUBLIC struct buffer *breada(dev_t dev, block_t num)
 {
-	kprintf("read from breada");
 	struct buffer *buf;
 	struct buffer *nextbuf;
 
 	buf = getblk(dev, num);
 
-	nextbuf = getblk(dev, num + 1);
-	brelse(nextbuf);
+	for(int i = 0; i < NB_SAVE_CACHE; i ++) {
+		nextbuf = getblk(dev, num + i + 1);
+		brelse(nextbuf);
+	}
 
 	/* Valid buffer? */
 	if (buf->flags & BUFFER_VALID)
